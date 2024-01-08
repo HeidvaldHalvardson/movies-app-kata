@@ -1,15 +1,17 @@
 import React from 'react'
 
-import './CardList.scss'
-
 import API from '../../API/API'
+import Spinner from '../UI/Spinner/Spinner'
 
 import CardItem from './CardItem/CardItem'
+
+import './CardList.scss'
 
 export default class CardList extends React.Component {
   state = {
     movies: [],
     genres: [],
+    isLoading: true,
   }
 
   componentDidMount() {
@@ -18,6 +20,7 @@ export default class CardList extends React.Component {
     api.getMoviesOnQuery('return').then((res) => {
       this.setState({
         movies: [...res],
+        isLoading: false,
       })
     })
 
@@ -30,11 +33,17 @@ export default class CardList extends React.Component {
 
   render() {
     return (
-      <ul className="card-list">
-        {this.state.movies.map((item) => {
-          return <CardItem key={item.id} movie={item} genresList={this.state.genres} />
-        })}
-      </ul>
+      <>
+        {this.state.isLoading ? (
+          <Spinner fontSize={60} />
+        ) : (
+          <ul className="card-list">
+            {this.state.movies.map((item) => {
+              return <CardItem key={item.id} movie={item} genresList={this.state.genres} />
+            })}
+          </ul>
+        )}
+      </>
     )
   }
 }
