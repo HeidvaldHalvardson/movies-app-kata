@@ -1,60 +1,54 @@
-import React from 'react';
-
-import {format} from "date-fns";
+import React from 'react'
+import { format } from 'date-fns'
 
 import './CardItem.scss'
 
-const CardItem = ({movie, genresList}) => {
-
+const CardItem = ({ movie, genresList }) => {
   const TRIM_LENGTH = 200
 
   const getTrimText = (text, length) => {
     if (text.length > length) {
       return text.slice(0, text.indexOf(' ', length)) + '...'
     }
-      return text
+    return text
   }
 
-  let genres = genresList.filter(item => movie.genre_ids.includes(item.id))
+  let genres = genresList.filter((item) => movie.genre_ids.includes(item.id))
 
   return (
-    <li className='card-item'>
-      <img className='card-item__image'
-           src={movie.poster_path ?
-             `https://image.tmdb.org/t/p/w500${movie.poster_path}` :
-             'https://artworks.thetvdb.com/banners/movies/292873/posters/AvgrHw6YEehlNxVZNVDoVz2Huht.jpg'}
-           alt='poster' />
-      <div className='card-item__wrapper'>
-        <h2 className='card-item__title'>{movie.title}</h2>
-        <span className='card-item__date'>
-          {movie.release_date ?
-            format(`${movie.release_date}`, 'MMMM dd, yyyy' ) :
-            'Release date is unknown...'}
+    <li className="card-item">
+      <img
+        className="card-item__image"
+        src={
+          movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : 'https://artworks.thetvdb.com/banners/movies/292873/posters/AvgrHw6YEehlNxVZNVDoVz2Huht.jpg'
+        }
+        alt="poster"
+      />
+      <div className="card-item__wrapper">
+        <h2 className="card-item__title">{movie.title}</h2>
+        <span className="card-item__date">
+          {movie.release_date ? format(`${movie.release_date}`, 'MMMM dd, yyyy') : 'Release date is unknown...'}
         </span>
-        <ul className='card-item__genre-list'>
-          {
-            genres.map(item => {
-              return (
-                <li className='card-item__genre-item' key={item.id}>
-                  <span>{item.name}</span>
-                </li>
-              )
-            })
-          }
+        <ul className="card-item__genre-list">
+          {genres.map((item) => {
+            return (
+              <li className="card-item__genre-item" key={item.id}>
+                <span>{item.name}</span>
+              </li>
+            )
+          })}
         </ul>
-        <p className='card-item__description'>
-          {
-            movie.overview ?
-              getTrimText(movie.overview, TRIM_LENGTH) :
-              'No description...'
-          }
+        <p className="card-item__description">
+          {movie.overview ? getTrimText(movie.overview, TRIM_LENGTH) : 'No description...'}
         </p>
       </div>
     </li>
-  );
-};
+  )
+}
 
-export default CardItem;
+export default CardItem
 
 // {
 //   "adult": false,

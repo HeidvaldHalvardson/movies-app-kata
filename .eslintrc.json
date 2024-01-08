@@ -7,16 +7,25 @@
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
-    "plugin:prettier/recommended",
     "plugin:import/errors",
-    "plugin:import/warnings"
+    "plugin:import/warnings",
+    "plugin:prettier/recommended",
+    "prettier"
   ],
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
+    "parser": "@babel/eslint-parser",
     "ecmaFeatures": {
       "jsx": true
     },
-    "ecmaVersion": 12,
-    "sourceType": "module"
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "requireConfigFile": false,
+    "babelOptions": {
+      "babelrc": false,
+      "configFile": false,
+      "presets": ["@babel/preset-react"]
+    }
   },
   "plugins": ["react", "prettier", "import"],
   "rules": {
@@ -49,6 +58,9 @@
       "node": {
         "extensions": [".js", ".jsx", ".ts", ".tsx"],
         "moduleDirectory": ["node_modules", "src/"]
+      },
+      "react": {
+        "version": "detect"
       }
     }
   }

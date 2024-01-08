@@ -1,15 +1,11 @@
-import React from 'react';
+import React from 'react'
 
 import './App.scss'
 
-import Main from "../Main/Main";
-
-const a = 12
+import Main from '../Main/Main'
 
 const App = () => {
-  return (
-    <Main />
-  );
-};
+  return <Main />
+}
 
-export default App;
+export default App

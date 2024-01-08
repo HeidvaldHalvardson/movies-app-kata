@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'react'
 
 import './Main.scss'
 
-import CardList from "../CardList/CardList";
+import CardList from '../CardList/CardList'
 
 const Main = () => {
   return (
     <main className="main-search">
       <CardList />
     </main>
-  );
-};
+  )
+}
 
-export default Main;
+export default Main

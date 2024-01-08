@@ -1,12 +1,12 @@
-import React from 'react';
+import React from 'react'
 
 import './CardList.scss'
 
-import CardItem from "./CardItem/CardItem";
-import API from "../../API/API";
+import API from '../../API/API'
+
+import CardItem from './CardItem/CardItem'
 
 export default class CardList extends React.Component {
-
   state = {
     movies: [],
     genres: [],
@@ -15,32 +15,26 @@ export default class CardList extends React.Component {
   componentDidMount() {
     const api = new API()
 
-    api.getMoviesOnQuery('return')
-      .then((res) => {
-        this.setState({
-          movies: [...res]
-        })
+    api.getMoviesOnQuery('return').then((res) => {
+      this.setState({
+        movies: [...res],
       })
+    })
 
-    api.getGenresList()
-      .then(res => {
-        this.setState({
-          genres: [...res]
-        })
+    api.getGenresList().then((res) => {
+      this.setState({
+        genres: [...res],
       })
+    })
   }
 
   render() {
     return (
-      <ul className='card-list'>
-        {
-          this.state.movies.map(item => {
-            return (
-              <CardItem key={item.id} movie={item} genresList={this.state.genres}/>
-            )
-          })
-        }
+      <ul className="card-list">
+        {this.state.movies.map((item) => {
+          return <CardItem key={item.id} movie={item} genresList={this.state.genres} />
+        })}
       </ul>
-    );
+    )
   }
-};
+}
