@@ -2,6 +2,7 @@ import React from 'react'
 
 import API from '../../API/API'
 import Spinner from '../UI/Spinner/Spinner'
+import Error from '../UI/Error/Error'
 
 import CardItem from './CardItem/CardItem'
 
@@ -12,38 +13,69 @@ export default class CardList extends React.Component {
     movies: [],
     genres: [],
     isLoading: true,
+    isError: false,
+  }
+
+  api = new API()
+
+  onMoviesLoad = (movies) => {
+    this.setState({
+      movies,
+      isLoading: false,
+      isError: false,
+    })
+  }
+
+  onGenresLoad = (genres) => {
+    this.setState({
+      genres: genres,
+    })
+  }
+
+  onError = () => {
+    this.setState({
+      isError: true,
+      isLoading: false,
+    })
+  }
+
+  getMovies = () => {
+    const query = 'return'
+    this.api.getMoviesOnQuery(query).then(this.onMoviesLoad).catch(this.onError)
+  }
+
+  getGenres = () => {
+    this.api.getGenresList().then(this.onGenresLoad).catch(this.onError)
   }
 
   componentDidMount() {
-    const api = new API()
-
-    api.getMoviesOnQuery('return').then((res) => {
-      this.setState({
-        movies: [...res],
-        isLoading: false,
-      })
-    })
-
-    api.getGenresList().then((res) => {
-      this.setState({
-        genres: [...res],
-      })
-    })
+    this.getMovies()
+    this.getGenres()
   }
 
   render() {
+    const { movies, genres, isLoading, isError } = this.state
+    const errorView = isError ? <Error message="Oops. Something went wrong. Try again." type="error" /> : null
+    const spinner = isLoading && !isError ? <Spinner fontSize={60} /> : null
+    const cardList = !(isLoading || isError) ? <CardListView genres={genres} movies={movies} /> : null
     return (
       <>
-        {this.state.isLoading ? (
-          <Spinner fontSize={60} />
-        ) : (
-          <ul className="card-list">
-            {this.state.movies.map((item) => {
-              return <CardItem key={item.id} movie={item} genresList={this.state.genres} />
-            })}
-          </ul>
-        )}
+        {errorView}
+        {spinner}
+        {cardList}
       </>
     )
   }
+}
+
+const CardListView = ({ movies, genres }) => {
+  return movies.length > 0 ? (
+    <ul className="card-list">
+      {movies.map((item) => {
+        return <CardItem key={item.id} movie={item} genresList={genres} />
+      })}
+    </ul>
+  ) : (
+    <Error message="We are very sorry, but we have not found anything..." type="info" />
+  )
 }
