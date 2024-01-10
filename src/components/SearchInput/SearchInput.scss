@@ -1,0 +1,16 @@
+.search-input {
+  width: 938px;
+  height: 40px;
+  padding: 9px 12px;
+  box-sizing: border-box;
+
+  border-radius: 3px;
+  border: 1px solid #D9D9D9;
+
+  &::placeholder {
+    color: #D9D9D9;
+
+    font-size: 16px;
+    line-height: 22px;
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react'
+import debounce from 'lodash.debounce'
 
 import API from '../../API/API'
 import Spinner from '../UI/Spinner/Spinner'
@@ -14,6 +15,7 @@ export default class CardList extends React.Component {
     genres: [],
     isLoading: true,
     isError: false,
+    message: 'Type to search...',
   }
 
   api = new API()
@@ -39,8 +41,12 @@ export default class CardList extends React.Component {
     })
   }
 
-  getMovies = () => {
-    const query = 'return'
+  getMovies = (query = '') => {
+    if (query.length === 0) {
+      this.setState({
+        message: 'Type to search...',
+      })
+    }
     this.api.getMoviesOnQuery(query).then(this.onMoviesLoad).catch(this.onError)
   }
 
@@ -48,16 +54,30 @@ export default class CardList extends React.Component {
     this.api.getGenresList().then(this.onGenresLoad).catch(this.onError)
   }
 
+  debounceGetMovies = debounce((query) => {
+    this.setState({
+      isLoading: true,
+      message: 'We are very sorry, but we have not found anything...',
+    })
+    this.getMovies(query)
+  }, 1500)
+
   componentDidMount() {
-    this.getMovies()
+    this.getMovies(this.props.query)
     this.getGenres()
   }
 
+  componentDidUpdate(prevProps) {
+    if (prevProps.query !== this.props.query) {
+      this.debounceGetMovies(this.props.query)
+    }
+  }
+
   render() {
-    const { movies, genres, isLoading, isError } = this.state
+    const { movies, genres, isLoading, isError, message } = this.state
     const errorView = isError ? <Error message="Oops. Something went wrong. Try again." type="error" /> : null
     const spinner = isLoading && !isError ? <Spinner fontSize={60} /> : null
-    const cardList = !(isLoading || isError) ? <CardListView genres={genres} movies={movies} /> : null
+    const cardList = !(isLoading || isError) ? <CardListView genres={genres} movies={movies} message={message} /> : null
     return (
       <>
         {errorView}
@@ -68,7 +88,7 @@ export default class CardList extends React.Component {
   }
 }
 
-const CardListView = ({ movies, genres }) => {
+const CardListView = ({ movies, genres, message }) => {
   return movies.length > 0 ? (
     <ul className="card-list">
       {movies.map((item) => {
@@ -76,6 +96,6 @@ const CardListView = ({ movies, genres }) => {
       })}
     </ul>
   ) : (
-    <Error message="We are very sorry, but we have not found anything..." type="info" />
+    <Error message={message} type="info" />
   )
 }

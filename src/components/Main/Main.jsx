@@ -4,10 +4,10 @@ import './Main.scss'
 
 import CardList from '../CardList/CardList'
 
-const Main = () => {
+const Main = ({ query }) => {
   return (
     <main className="main-search">
-      <CardList />
+      <CardList query={query} />
     </main>
   )
 }
