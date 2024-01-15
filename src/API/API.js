@@ -20,10 +20,15 @@ export default class API {
     throw new Error(`Could not fetch data to ${this._mainUrl}${url}`)
   }
 
-  getMoviesOnQuery(query, adult = false, language = 'en-US', page = 1) {
+  getMoviesOnQuery(query, page = 1, adult = false, language = 'en-US') {
     return this.getResponse(
       `search/movie?query=${query}&include_adult=${adult}&language=${language}&page=${page}`
-    ).then((res) => res.results)
+    ).then((res) => {
+      return {
+        results: res.results,
+        totalItems: res.total_results,
+      }
+    })
   }
 
   getGenresList(language = 'en') {
