@@ -5,6 +5,7 @@ import API from '../../API/API'
 import Spinner from '../UI/Spinner/Spinner'
 import Error from '../UI/Error/Error'
 import PaginationUI from '../UI/Pagination/PaginationUI'
+import { APIConsumer } from '../../API-Context/API-Context'
 
 import CardItem from './CardItem/CardItem'
 
@@ -13,12 +14,14 @@ import './CardList.scss'
 export default class CardList extends React.Component {
   state = {
     movies: [],
-    genres: [],
-    isLoading: true,
+    isLoading: false,
     isError: false,
     message: 'Type to search...',
     currentPage: 1,
+    currentPageRated: 1,
     totalItems: 0,
+    tab: 'Search',
+    ratingList: [],
   }
 
   api = new API()
@@ -26,14 +29,6 @@ export default class CardList extends React.Component {
   onMoviesLoad = (movies) => {
     this.setState({
       movies,
-      isLoading: false,
-      isError: false,
-    })
-  }
-
-  onGenresLoad = (genres) => {
-    this.setState({
-      genres: genres,
       isLoading: false,
       isError: false,
     })
@@ -63,27 +58,62 @@ export default class CardList extends React.Component {
       .catch(this.onError)
   }
 
-  getGenres = () => {
-    this.api.getGenresList().then(this.onGenresLoad).catch(this.onError)
+  getMoviesWithRating = (guestId, currentPage) => {
+    this.api
+      .getMoviesWithRating(guestId, currentPage)
+      .then((res) => {
+        this.onMoviesLoad(res.results)
+        this.setState({
+          totalItems: res.totalItems,
+        })
+      })
+      .catch(this.onError)
   }
 
   debounceGetMovies = debounce((query, currentPage) => {
     this.setState({
       isLoading: true,
       message: 'We are very sorry, but we have not found anything...',
-      currentPage: 1,
     })
     this.getMovies(query, currentPage)
   }, 1500)
 
   paginationOnChange = (page) => {
-    this.setState({
-      currentPage: page,
+    if (this.state.tab === 'Search') {
+      this.setState({
+        currentPage: page,
+      })
+    } else {
+      this.setState({
+        currentPageRated: page,
+      })
+    }
+  }
+
+  addRatedMovie = (id, value) => {
+    const newRatedMovie = { id, value }
+    this.setState(({ ratingList }) => {
+      return {
+        ratingList: [...ratingList, newRatedMovie],
+      }
+    })
+  }
+
+  removeRatedMovie = (id) => {
+    this.setState(({ ratingList }) => {
+      const newRatingList = ratingList.filter((item) => item.id !== id)
+      return {
+        ratingList: newRatingList,
+      }
     })
   }
 
   componentDidMount() {
-    this.getGenres()
+    if (sessionStorage.getItem('ratingList')) {
+      this.setState({
+        ratingList: JSON.parse(sessionStorage.getItem('ratingList')),
+      })
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -95,20 +125,49 @@ export default class CardList extends React.Component {
       this.getMovies(this.props.query, this.state.currentPage)
       window.scrollTo(0, 0)
     }
+
+    if (prevState.currentPageRated !== this.state.currentPageRated) {
+      this.getMoviesWithRating(this.props.guestId, this.state.currentPageRated)
+      window.scrollTo(0, 0)
+    }
+
+    if (prevProps.tab !== this.props.tab && this.props.tab === 'Rated') {
+      this.setState({
+        tab: this.props.tab,
+        message: 'We are very sorry, but we have not found anything...',
+      })
+      this.getMoviesWithRating(this.props.guestId, this.state.currentPageRated)
+    }
+
+    if (prevProps.tab !== this.props.tab && this.props.tab === 'Search') {
+      this.setState({
+        tab: this.props.tab,
+        message: 'Type to search...',
+      })
+      this.getMovies(this.props.query, this.state.currentPage)
+    }
+
+    if (prevState.ratingList !== this.state.ratingList) {
+      sessionStorage.setItem('ratingList', JSON.stringify(this.state.ratingList))
+    }
   }
 
   render() {
-    const { genres, isLoading, isError, message, movies, currentPage } = this.state
+    const { isLoading, isError, message, movies, currentPage, currentPageRated, ratingList } = this.state
     const errorView = isError ? <Error message="Oops. Something went wrong. Try again." type="error" /> : null
     const spinner = isLoading && !isError ? <Spinner fontSize={60} /> : null
+    const page = this.state.tab === 'Search' ? currentPage : currentPageRated
     const cardList = !(isLoading || isError) ? (
       <CardListView
-        genres={genres}
         movies={movies}
         message={message}
-        current={currentPage}
+        current={page}
         onChange={this.paginationOnChange}
         totalItems={this.state.totalItems}
+        guestId={this.props.guestId}
+        addRatedMovie={this.addRatedMovie}
+        removeRatedMovie={this.removeRatedMovie}
+        ratingList={ratingList}
       />
     ) : null
     return (
@@ -121,16 +180,50 @@ export default class CardList extends React.Component {
   }
 }
 
-const CardListView = ({ movies, genres, message, current, onChange, totalItems }) => {
+const CardListView = ({
+  movies,
+  message,
+  current,
+  onChange,
+  totalItems,
+  guestId,
+  addRatedMovie,
+  removeRatedMovie,
+  ratingList,
+}) => {
   return movies.length > 0 ? (
-    <>
-      <ul className="card-list">
-        {movies.map((item) => {
-          return <CardItem key={item.id} movie={item} genresList={genres} />
-        })}
-      </ul>
-      <PaginationUI current={current} onChange={onChange} totalItems={totalItems} />
-    </>
+    <APIConsumer>
+      {({ genres, postRating, deleteRating }) => {
+        return (
+          <>
+            <ul className="card-list">
+              {movies.map((movie) => {
+                let rating
+                ratingList.map((item) => {
+                  if (item.id === movie.id) {
+                    rating = item.value
+                  }
+                })
+                return (
+                  <CardItem
+                    key={movie.id}
+                    movie={movie}
+                    genresList={genres}
+                    postRating={postRating}
+                    deleteRating={deleteRating}
+                    guestId={guestId}
+                    addRatedMovie={addRatedMovie}
+                    removeRatedMovie={removeRatedMovie}
+                    rating={rating}
+                  />
+                )
+              })}
+            </ul>
+            <PaginationUI current={current} onChange={onChange} totalItems={totalItems} />
+          </>
+        )
+      }}
+    </APIConsumer>
   ) : (
     <Error message={message} type="info" />
   )

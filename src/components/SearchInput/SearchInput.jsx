@@ -16,7 +16,7 @@ export default class SearchInput extends React.Component {
 
   render() {
     return (
-      <form onSubmit={(evt) => evt.preventDefault()}>
+      <form className="form" onSubmit={(evt) => evt.preventDefault()}>
         <input
           className="search-input"
           placeholder="Type to search..."

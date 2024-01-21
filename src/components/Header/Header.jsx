@@ -1,13 +1,28 @@
 import React from 'react'
+import { Tabs } from 'antd'
 
 import './Header.scss'
 
-import SearchInput from '../SearchInput/SearchInput'
-
-const Header = ({ searchMovies }) => {
+const Header = ({ onChangeTabs }) => {
+  const items = [
+    {
+      key: 'Search',
+      label: 'Search',
+    },
+    {
+      key: 'Rated',
+      label: 'Rated',
+    },
+  ]
   return (
     <header className="main-header">
-      <SearchInput searchMovies={searchMovies} />
+      <Tabs
+        defaultActiveKey="1"
+        items={items}
+        tabBarStyle={{ fontFamily: 'Inter, sans-serif', margin: '0 auto 20px' }}
+        tabBarGutter={16}
+        onChange={onChangeTabs}
+      />
     </header>
   )
 }
